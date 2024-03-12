@@ -1,3 +1,5 @@
+use std::cmp::min;
+
 
 
 pub struct HistogramSpecs {
@@ -14,9 +16,23 @@ impl HistogramSpecs {
         vec![0u64; self.n_square_bins]
     }
 
-    fn unsquare_historgam(&self, data: Vec<u64>) -> Vec<u64> {
+    pub fn unsquare_historgam(&self, data: Vec<u64>) -> Vec<u64> {
         /* Convert histogram of r^2 to linear */
 
-        unimplemented!();
+        let mut output = vec![0u64; self.n_linear_bins];
+        
+        let n = data.len();
+
+        for i in 0..self.n_linear_bins {
+            if i*i < n {
+                for j in i*i .. min((i+1)*(i+1), n) {
+                    output[i] += data[j];
+                
+                }
+            }
+        }
+
+
+        output
     }
 }

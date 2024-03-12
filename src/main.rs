@@ -131,5 +131,7 @@ fn main() {
         }
     }
     
-    dbg!(square_histogram);
+    let output = histogram_specs.unsquare_historgam(square_histogram);
+
+    dbg!(output);
 }
