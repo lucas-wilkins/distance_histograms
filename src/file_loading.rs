@@ -3,12 +3,11 @@
 use std::path::PathBuf;
 use std::fs::File;
 use std::io::{BufReader, Read, ErrorKind};
-use std::error::Error;
 use std::cmp::min;
 
 pub struct XYZData {
-    data: Vec<f64>,
-    n_points: usize
+    pub data: Vec<f64>,
+    pub n_points: usize
 }
 
 impl XYZData {
@@ -26,7 +25,7 @@ impl XYZData {
         }
     }
 
-    pub fn show_some_data(&self) {
+    pub fn _show_some_data(&self) {
         /* Show the start of loaded xyz data */
     
         let max_index: usize = min(21, self.data.len());

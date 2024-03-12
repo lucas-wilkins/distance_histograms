@@ -8,7 +8,7 @@ pub struct HistogramSpecs {
 }
 
 impl HistogramSpecs {
-    fn create_empty_histogram(&self) -> Vec<u64> {
+    pub fn create_empty_histogram(&self) -> Vec<u64> {
         /* Create an empty histogram for r^2 values */
         
         vec![0u64; self.n_square_bins]
