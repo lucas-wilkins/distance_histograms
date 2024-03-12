@@ -11,7 +11,7 @@ impl HistogramSpecs {
     fn create_empty_histogram(&self) -> Vec<u64> {
         /* Create an empty histogram for r^2 values */
         
-        return vec![0u64; self.n_square_bins]
+        vec![0u64; self.n_square_bins]
     }
 
     fn unsquare_historgam(&self, data: Vec<u64>) -> Vec<u64> {

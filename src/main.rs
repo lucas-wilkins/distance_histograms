@@ -2,11 +2,13 @@
 extern crate clap;
 use clap::Parser;
 
-
 use std::path::PathBuf;
 
 mod histogram_specs;
 use histogram_specs::HistogramSpecs;
+
+mod file_loading;
+use file_loading::{load_data, XYZData};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about=None)]
@@ -29,13 +31,14 @@ fn main() {
     
     let args = Args::parse();
 
-    println!("{}", args.filename_1 == args.filename_2);
+    // println!("{}", args.filename_1 == args.filename_2);
 
 
     /* Calculate parameters for histogramming */
 
     // Factor from r^2 to bin index
     let bin_factor = 1.0/(args.delta_r*args.delta_r);
+    let bin_scale = 1.0/args.delta_r;
 
     let square_bins = ((args.max_r / args.delta_r).powf(2.0)) as usize;
 
@@ -49,5 +52,12 @@ fn main() {
         n_linear_bins: linear_bins,
         n_square_bins: square_bins
     };
+
+    let data_1: XYZData = load_data(&args.filename_1, bin_scale);
     
+    data_1.show_some_data();
+    // let data_2: Vec<f64> = 
+
+    let data_2: XYZData = load_data(&args.filename_2, bin_scale);
+
 }
