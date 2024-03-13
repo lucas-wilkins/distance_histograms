@@ -2,9 +2,13 @@
 extern crate clap;
 use clap::Parser;
 
+
+use compound_duration::format_dhms;
+
 use std::path::PathBuf;
-use std::thread;
+use std::{thread, thread::available_parallelism};
 use std::iter::zip;
+use std::time::Instant;
 
 mod histogram_specs;
 use histogram_specs::HistogramSpecs;
@@ -28,14 +32,35 @@ struct Args {
     max_r: f64,
 
     #[arg(short, long, value_name="LIN_THREADS", default_value_t=5)]
-    n_threads: u8
+    n_threads: u8,
 
+    #[arg(long, value_name="ASSUME_DIFFERENT")]
+    assume_different: bool,
 
+    #[arg(short, long, value_name="TIMER")]
+    timer: bool,
+
+    #[arg(short, long, value_name="OUTPUT_FILE")]
+    output: Option<String>,
+
+    #[arg(short, long, value_name="VERBOSE")]
+    verbose: bool
 }
 
 fn main() {
     
     let args = Args::parse();
+
+
+    // Start timer
+    let now = Instant::now();
+
+    let verbose =args.verbose;
+
+    if verbose {
+        let parallelism = available_parallelism().unwrap().get();
+        println!("{} cores available", parallelism); 
+    }
 
     /* Calculate parameters for histogramming */
 
@@ -79,9 +104,10 @@ fn main() {
         }).flatten();
 
 
+
     /* Set up threads */
 
-    let threads = 
+    let threads: Vec<_> = 
         pair_pairs.map(|(start_1, end_1, start_2, end_2)| {
 
             let mut histogram_values = histogram_specs.create_empty_histogram();
@@ -89,13 +115,13 @@ fn main() {
             let raw_1 = data_1.data.clone();
             let raw_2 = data_2.data.clone();
 
-
             thread::spawn(move || {
 
+                if verbose {
+                    println!("Starting thread for chunk {start_1}..{end_1} x {start_2}..{end_2}");
+                }
 
                 /* Thread code */
-
-                println!("Thread for range {start_1}..{end_1} x {start_2}..{end_2} started!");
 
                 for index_1 in start_1..end_1 {
                     for index_2 in start_2..end_2 {
@@ -112,26 +138,38 @@ fn main() {
                     }
                 }
 
-                println!("Thread for range {start_1}..{end_1} x {start_2}..{end_2} finished!");
+
+                if verbose {
+                    println!("Finished chunk {start_1}..{end_1} x {start_2}..{end_2}");
+                }
 
                 histogram_values
                 
             })
-        });
+        }).collect(); // If we don't collect, they wont spawn
 
 
-
-    let thread_histograms = threads.map(|handle| { handle.join().unwrap() });
-
+    /* Combine the output of all the arrays */
     let mut square_histogram = histogram_specs.create_empty_histogram();
 
-    for source in thread_histograms {
-        for i in 0 .. source.len() {
-            square_histogram[i] += source[i];
+    for thread in threads {
+        let contribution: Vec<u64> = thread.join().unwrap();
+
+        for i in 0 .. contribution.len() {
+            square_histogram[i] += contribution[i];
         }
+
     }
-    
+
     let output = histogram_specs.unsquare_historgam(square_histogram);
 
     dbg!(output);
+
+    // Timing details
+
+    if args.timer {
+        let elapsed_time = now.elapsed();
+        let n_pairs = (data_1.n_points as u64) * (data_2.n_points as u64);
+        println!("Binned {} pairs in {}", n_pairs, format_dhms(elapsed_time.as_secs()));
+    }
 }
