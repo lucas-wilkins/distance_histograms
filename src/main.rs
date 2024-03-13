@@ -16,6 +16,9 @@ use histogram_specs::HistogramSpecs;
 mod file_loading;
 use file_loading::{load_data, XYZData};
 
+mod outputting;
+use outputting::format_histogram_data;
+
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about=None)]
@@ -163,13 +166,21 @@ fn main() {
 
     let output = histogram_specs.unsquare_historgam(square_histogram);
 
-    dbg!(output);
-
+    
     // Timing details
 
     if args.timer {
         let elapsed_time = now.elapsed();
         let n_pairs = (data_1.n_points as u64) * (data_2.n_points as u64);
         println!("Binned {} pairs in {}", n_pairs, format_dhms(elapsed_time.as_secs()));
+    }
+
+    /* Write data to file / stdout */
+
+    let output_string = format_histogram_data(&output, &histogram_specs);
+
+    match args.output {
+        Some(filename) => (),
+        None => println!("{}", output_string)
     }
 }

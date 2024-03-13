@@ -1,3 +1,5 @@
+/* Specifications for a histogram */
+
 use std::cmp::min;
 
 
