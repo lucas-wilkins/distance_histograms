@@ -19,6 +19,7 @@ use file_loading::{load_data, XYZData};
 mod outputting;
 use outputting::format_histogram_data;
 
+/* Argument parser specification */
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about=None)]
@@ -50,8 +51,15 @@ struct Args {
     verbose: bool
 }
 
+/*
+ *
+ *   Main
+ *
+ */
+
 fn main() {
     
+    // command line arguments
     let args = Args::parse();
 
 
@@ -60,6 +68,7 @@ fn main() {
 
     let verbose =args.verbose;
 
+    // Is it a diagonally symmetric problem, if so, we can optimise
     let diagonal = (args.filename_1 == args.filename_2) && !args.assume_different;
 
     if verbose {
@@ -75,15 +84,14 @@ fn main() {
     /* Calculate parameters for histogramming */
 
     // Factor from r^2 to bin index
-    let bin_factor = 1.0/(args.delta_r*args.delta_r);
-    let bin_scale = 1.0/args.delta_r;
+    let bin_factor = 1.0/(args.delta_r*args.delta_r); 
+    let bin_scale = 1.0/args.delta_r;   // Scale for coordinates
 
-    let square_bins = ((args.max_r / args.delta_r).powf(2.0)) as usize;
+    let square_bins = ((args.max_r / args.delta_r).powf(2.0)) as usize; //number of bins in the r squared representation
 
-    let linear_bins = (args.max_r / args.delta_r) as usize;
+    let linear_bins = (args.max_r / args.delta_r) as usize; // number of bins in the linear representation
 
-    //println!("Linear bins = {}, Square bins = {}", linear_bins, square_bins);
-
+    // Object that holds information about the specs
     let histogram_specs: HistogramSpecs = HistogramSpecs {
         bin_size: args.delta_r, 
         bin_factor: bin_factor,
@@ -93,9 +101,7 @@ fn main() {
 
     
     
-    
-    
-    // This will be the main output
+    // This will be for collecting up the thread data
     let mut square_histogram = histogram_specs.create_empty_histogram();
 
     /* Two different methods, one if it is a diagonal entry, another if it is not */
