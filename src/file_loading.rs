@@ -6,6 +6,7 @@ use std::io::{BufReader, Read, ErrorKind};
 use std::cmp::min;
 
 pub struct XYZData {
+    /* Representtion of XYZ file */
     pub data: Vec<f64>,
     pub n_points: usize
 }
@@ -41,6 +42,8 @@ impl XYZData {
 }
 
 pub fn load_data(file_path: &PathBuf, scaling: f64) -> XYZData {
+
+    /* Load data from xyz file, it scales it as it is read */
     
     let file: File = match File::open(file_path) {
         Ok(f) => f,
